@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { getAssets } from "@/services/api";
 import { AssetCard } from "@/components/AssetCard";
@@ -7,27 +6,66 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { ArrowRight, TrendingUp, Shield, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Index = () => {
   const [search, setSearch] = useState("");
   const { data: assets, isLoading, error } = useQuery({
     queryKey: ["assets"],
-    queryFn: getAssets,
+    queryFn: () => getAssets(),
   });
 
+  // Safe filtering that handles null or undefined assets
   const filteredAssets = assets?.filter(
     (asset) =>
       asset.name.toLowerCase().includes(search.toLowerCase()) ||
       asset.symbol.toLowerCase().includes(search.toLowerCase())
-  );
+  ) || [];
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#E8EFE6] to-[#D4C9B9] dark:bg-[#1A1F2C]">
         <Navbar />
-        <div className="flex items-center justify-center h-[calc(100vh-73px)]">
-          <div className="neo-brutal-card p-6 mx-4 bg-white/90 border-[#6E59A5] dark:bg-[#403E43] dark:border-[#8A898C]">
-            <p className="text-xl font-bold text-[#333333] dark:text-[#F1F0FB]">Loading assets...</p>
+        <div className="container py-16 px-4 md:px-8">
+          <div className="max-w-4xl mx-auto text-center mb-16">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-[#6E59A5] to-[#7E69AB] dark:from-[#1EAEDB] dark:to-[#0EA5E9] bg-clip-text text-transparent">
+              Trade Crypto with Confidence
+            </h1>
+            <div className="h-8 mb-8 w-3/4 mx-auto">
+              <Skeleton className="h-full w-full" />
+            </div>
+            <div className="neo-brutal-card h-14 w-48 mx-auto">
+              <Skeleton className="h-full w-full" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="neo-brutal-card p-6 bg-white/90 border-[#6E59A5] dark:bg-[#221F26] dark:border-[#403E43] backdrop-blur-lg">
+                <Skeleton className="w-12 h-12 mb-4 rounded-full" />
+                <Skeleton className="h-6 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-full mb-4" />
+              </div>
+            ))}
+          </div>
+
+          <div className="space-y-8">
+            <div className="flex flex-col items-center space-y-4">
+              <h2 className="text-3xl font-bold text-center text-[#333333] dark:text-[#F1F0FB]">Available Assets</h2>
+              <Skeleton className="h-12 max-w-md w-full" />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="neo-brutal-card p-6 bg-white/90">
+                  <Skeleton className="h-6 w-1/2 mb-2" />
+                  <Skeleton className="h-4 w-1/4 mb-4" />
+                  <Skeleton className="h-8 w-full mb-2" />
+                  <Skeleton className="h-4 w-1/3 mb-2" />
+                  <Skeleton className="h-4 w-2/3" />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -40,7 +78,14 @@ const Index = () => {
         <Navbar />
         <div className="flex items-center justify-center h-[calc(100vh-73px)]">
           <div className="neo-brutal-card p-6 mx-4 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-500">
-            <p className="text-xl font-bold text-red-600 dark:text-red-400">Error loading assets</p>
+            <p className="text-xl font-bold text-red-600 dark:text-red-400">
+              Error loading assets. Please try again later.
+            </p>
+            {error instanceof Error && (
+              <p className="mt-2 text-sm text-red-500 dark:text-red-300">
+                {error.message}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -108,9 +153,17 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            {filteredAssets?.map((asset) => (
-              <AssetCard key={asset.id} asset={asset} />
-            ))}
+            {filteredAssets.length > 0 ? (
+              filteredAssets.map((asset) => (
+                <AssetCard key={asset.id} asset={asset} />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <p className="text-lg text-[#555555] dark:text-[#8E9196]">
+                  {search ? "No assets match your search" : "No assets available. Please try again later."}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
